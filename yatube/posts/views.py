@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
-from django.urls import reverse, reverse_lazy
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import PostForm
@@ -63,7 +63,6 @@ def post_edit(request, post_id):
             messages.error(request, 'Текст публикации должен быть '
                                     'не короче 10 символов!')
             return redirect(reverse('posts:post_update', args=[post.id]))
-        text = form.cleaned_data['text']
         form.save()
         return redirect(reverse('posts:post_details', args=[post.id]))
     elif request.user != post.author:
