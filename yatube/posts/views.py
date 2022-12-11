@@ -6,12 +6,12 @@ from .forms import PostForm
 from .models import Post, Group, User
 from .utils import paginate_page
 
-NUMBER_OF_PAGES = 10
+POSTS_PER_PAGE = 10
 
 
 def index(request):
     posts = Post.objects.select_related('author')
-    page_obj = paginate_page(request, posts, NUMBER_OF_PAGES)
+    page_obj = paginate_page(request, posts, POSTS_PER_PAGE)
     return render(request, 'posts/index.html', {
         'title': 'Последние обновления на сайте',
         'posts': posts,
@@ -22,7 +22,7 @@ def index(request):
 def group(request, slug):
     group = get_object_or_404(Group, slug=slug)
     group_posts = group.posts.select_related('author')
-    page_obj = paginate_page(request, group_posts, NUMBER_OF_PAGES)
+    page_obj = paginate_page(request, group_posts, POSTS_PER_PAGE)
     return render(request, 'posts/group_list.html', {
         'title': 'Все записи сообщества',
         'group': group,

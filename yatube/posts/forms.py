@@ -1,7 +1,7 @@
 from django import forms
 from .models import Post
 
-TEXT_LENGTH_MINIMUM = 10
+TEXT_LENGTH_MINIMAL = 10
 
 
 class PostForm(forms.ModelForm):
@@ -18,7 +18,7 @@ class PostForm(forms.ModelForm):
 
     def clean_text(self):
         data = self.cleaned_data['text']
-        if len(data) < TEXT_LENGTH_MINIMUM:
+        if len(data) < TEXT_LENGTH_MINIMAL:
             raise forms.ValidationError('Текст публикации не может быть короче'
                                         ' 10 символов.')
         return data
