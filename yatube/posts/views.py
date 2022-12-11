@@ -5,13 +5,14 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import PostForm
 from .models import Post, Group, User
+from .utils import paginate_page
+
+NUMBER_OF_PAGES = 10
 
 
 def index(request):
     posts = Post.objects.select_related('author')
-    paginator = Paginator(posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginate_page(request, posts, NUMBER_OF_PAGES)
     return render(request, 'posts/index.html', {
         'title': 'Последние обновления на сайте',
         'posts': posts,
@@ -22,9 +23,7 @@ def index(request):
 def group(request, slug):
     group = get_object_or_404(Group, slug=slug)
     group_posts = group.posts.select_related('author')
-    paginator = Paginator(group_posts, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginate_page(request, group_posts, NUMBER_OF_PAGES)
     return render(request, 'posts/group_list.html', {
         'title': 'Все записи сообщества',
         'group': group,
@@ -35,10 +34,8 @@ def group(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    post_list = author.posts.select_related('author')
-    paginator = Paginator(post_list, 10)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    post_list = author.posts.select_related('group')
+    page_obj = paginate_page(request, post_list, NUMBER_OF_PAGES)
     context = {
         'author': author,
         'page_obj': page_obj,
@@ -47,7 +44,7 @@ def profile(request, username):
 
 
 def post_detail(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+    post = get_object_or_404(Post.objects.select_related('group'), id=post_id)
     context = {
         'post': post,
     }
@@ -55,51 +52,48 @@ def post_detail(request, post_id):
 
 
 @login_required
-def post_edit(request, post_id):
-    post = Post.objects.get(id=post_id)
-    if request.user == post.author and request.method == 'POST':
-        form = PostForm(request.POST, instance=post)
-        if not form.is_valid():
-            messages.error(request, 'Текст публикации должен быть '
-                                    'не короче 10 символов!')
-            return redirect(reverse('posts:post_update', args=[post.id]))
-        form.save()
-        return redirect(reverse('posts:post_details', args=[post.id]))
-    elif request.user != post.author:
-        return redirect('posts:index')
-    context = {
-        'post': post,
-        'form': PostForm(instance=post),
-    }
-    return render(request, 'posts/update_post.html', context)
-
-
-@login_required
 def post_create(request):
     post = Post.objects.select_related('author')
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-        if not form.is_valid():
-            messages.error(request, 'Текст публикации должен быть '
-                                    'не короче 10 символов!')
-            return render(request, 'posts/create_post.html', {'form': form})
-
-        text = form.cleaned_data['text']
-        post_item = form.save(commit=False)
-        post_item.author = request.user
-        post_item.text = text
-        post_item.save()
-        return redirect('posts:profile', post_item.author)
-
     context = {
         'post': post,
         'form': PostForm(),
     }
-    return render(request, 'posts/create_post.html', context)
+    form = PostForm(request.POST or None)
+    if not form.is_valid():
+        messages.error(request, 'Текст публикации должен быть '
+                                'не короче 10 символов!')
+        return render(request, 'posts/create_post.html', context)
+
+    text = form.cleaned_data['text']
+    post_item = form.save(commit=False)
+    post_item.author = request.user
+    post_item.text = text
+    post_item.save()
+    return redirect('posts:profile', post_item.author)
 
 
-def post_delete(request, post_id):
-    post = Post.objects.get(id=post_id)
+@login_required
+def post_edit(request, post_id):
+    post = get_object_or_404(Post.objects.filter(id=post_id))
+    context = {
+        'post': post,
+        'form': PostForm(instance=post),
+    }
     if request.user == post.author:
-        post.delete()
-        return redirect(reverse('posts:index'))
+        form = PostForm(request.POST or None, instance=post)
+        if not form.is_valid():
+            messages.error(request, 'Текст публикации должен быть '
+                                    'не короче 10 символов!')
+            return render(request, 'posts/update_post.html', context)
+        form.save()
+        return redirect(reverse('posts:post_details', args=[post.id]))
+
+
+# Я оставлю это чисто для себя, меня бесило отсутствие возможности быстро
+# удалить тестовые записи.
+
+# def post_delete(request, post_id):
+#     post = Post.objects.get(id=post_id)
+#     if request.user == post.author:
+#         post.delete()
+#         return redirect(reverse('posts:index'))

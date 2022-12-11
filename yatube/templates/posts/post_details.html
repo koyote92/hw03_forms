@@ -31,7 +31,7 @@
         </article>
         {% if post.author == user %}
             <a href="{% url 'posts:post_update' post.id %}">Редактировать</a>
-            <a href="{% url 'posts:post_delete' post.id %}">Удалить</a>
+{#            <a href="{% url 'posts:post_delete' post.id %}">Удалить</a>#}
         {% endif %}
     </div>
 {% endblock content %}
