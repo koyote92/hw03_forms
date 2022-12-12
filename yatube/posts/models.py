@@ -1,8 +1,9 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from . import settings
 
-SELF_TEXT_LENGTH = 10
+
 User = get_user_model()
 
 
@@ -63,4 +64,4 @@ class Post(models.Model):
         verbose_name_plural = 'Публикации'
 
     def __str__(self):
-        return self.text[:SELF_TEXT_LENGTH]
+        return self.text[:settings.SELF_TEXT_LENGTH]
