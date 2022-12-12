@@ -52,22 +52,20 @@ def post_detail(request, post_id):
 @login_required
 def post_create(request):
     post = Post.objects.select_related('author')
-    context = {
-        'post': post,
-        'form': PostForm(),
-    }
     form = PostForm(request.POST or None)
-    if not form.is_valid():
-        messages.error(request, 'Текст публикации должен быть '
-                                'не короче 10 символов!')
-        return render(request, 'posts/create_post.html', context)
+    if form.is_valid():
+        post_item = form.save(commit=False)
+        post_item.author = request.user
+        post_item.save()
+        return redirect('posts:profile', post_item.author)
 
-    text = form.cleaned_data['text']
-    post_item = form.save(commit=False)
-    post_item.author = request.user
-    post_item.text = text
-    post_item.save()
-    return redirect('posts:profile', post_item.author)
+    messages.error(request, 'Текст публикации должен быть '
+                            'не короче 10 символов!')
+    return render(
+        request,
+        'posts/create_post.html',
+        {'post': post, 'form': form}
+    )
 
 
 # Я не совсем понял, чего ты хочешь от меня в своём большом замечании с
@@ -81,11 +79,12 @@ def post_create(request):
 def post_edit(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if post.author != request.user:
+        messages.error(request, 'Вы не можете редактировать чужие публикации')
         return redirect('posts:post_details', post_id=post_id)
-    form = PostForm(request.POST or None, instance=post)
+    form = PostForm(request.POST or None, instance=post)  # А зачем instance?
     if form.is_valid():
         form.save()
-        return redirect(reverse('posts:post_details', args=[post_id]))
+        return redirect('posts:post_details', post_id=post_id)
     return render(
         request,
         'posts/update_post.html',
