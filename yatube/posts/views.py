@@ -71,7 +71,7 @@ def post_create(request):
 # примером.
 # Меня ж автотесты не пропустят, если я буду принимать и передавать
 # дополнительный параметр username. Да и нафига username тут вообще?
-# Я могу добавить {'is_edit": True} в context и убрать нафиг отдельный
+# Я могу добавить {'is_edit': True} в context и убрать нафиг отдельный
 # темлпейт update_post.html, но опять - автотесты будут вонять "Ай-ай-ай,
 # у тебя темплейта нет, дурачок!
 @login_required
@@ -80,7 +80,7 @@ def post_edit(request, post_id):
     if post.author != request.user:
         messages.error(request, 'Вы не можете редактировать чужие публикации')
         return redirect('posts:post_details', post_id=post_id)
-    form = PostForm(request.POST or None)  # А зачем instance сюда добавлять?
+    form = PostForm(request.POST or None, instance=post)
     if form.is_valid():
         form.save()
         return redirect('posts:post_details', post_id=post_id)
