@@ -1,5 +1,4 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
@@ -81,7 +80,7 @@ def post_edit(request, post_id):
     if post.author != request.user:
         messages.error(request, 'Вы не можете редактировать чужие публикации')
         return redirect('posts:post_details', post_id=post_id)
-    form = PostForm(request.POST or None, instance=post)  # А зачем instance?
+    form = PostForm(request.POST or None)  # А зачем instance сюда добавлять?
     if form.is_valid():
         form.save()
         return redirect('posts:post_details', post_id=post_id)
