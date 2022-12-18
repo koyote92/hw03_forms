@@ -1,27 +1,50 @@
 {% extends 'base.html' %}
-{% block title %}Создать пост{% endblock title %}
+{% block title %}
+    {% if is_edit %}
+        Редактировать пост
+    {% else %}
+        Создать пост
+    {% endif %}
+{% endblock title %}
 {% block content %}
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-8 p-5">
-
                 <div class="card">
                     <div class="card-header">
-                        Новый пост
+                        {% if is_edit %}
+                            Редактировать пост
+                        {% else %}
+                            Новый пост
+                        {% endif %}
                     </div>
                     <div class="card-body">
-                        <form id="add_form" method="post" action="{% url 'posts:post_create' %}">
-                            {% csrf_token %}
-                            {% if errors %}
-                                {{ form.non_field_errors }}
-                                {% for error in errors %}
-                                    <div class="alert-danger">{{ error }}</div>
-                                {% endfor %}
-                            {% endif %}
-                            {{ form }}
+
+                        {% if is_edit %}
+                            <form id="update-form" method="post" action="{% url 'posts:post_update' post.id %}">
+                        {% else %}
+                            <form id="add_form" method="post" action="{% url 'posts:post_create' %}">
+                        {% endif %}
+
+                        {% csrf_token %}
+
+                        {% if errors %}
+                            {% for error in errors %}
+                                <div class="alert-danger">{{ error }}</div>
+                            {% endfor %}
+                        {% endif %}
+
+                        {{ form }}
+
                         </form>
                         <div class="modal-footer">
-                            <button form="add_form" type="submit" class="btn btn-primary">Добавить</button>
+
+                            {% if is_edit %}
+                                <button form="update-form" type="submit" class="btn btn-primary">Обновить</button>
+                            {% else %}
+                                <button form="add_form" type="submit" class="btn btn-primary">Добавить</button>
+                            {% endif %}
+
                         </div>
                     </div>
                 </div>

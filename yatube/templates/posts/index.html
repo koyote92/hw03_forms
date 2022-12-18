@@ -24,7 +24,11 @@
                     {{ post.text }}
                 </p>
             </article>
-            <a href="{% url 'posts:post_details' post.id %}">Подробная информация</a>
+            <button type="button" class="btn btn-primary">
+                <a href="{% url 'posts:post_details' post.id %}">
+                    <span style="color:white">Подробная информация</span>
+                </a>
+            </button>
             {% if not forloop.last %}
                 <hr>{% endif %}
         {% endfor %}

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from pytils.translit import slugify
 
 from . import settings
 
@@ -9,11 +10,12 @@ User = get_user_model()
 
 class Group(models.Model):
     title = models.CharField(
-        max_length=200,
+        max_length=80,
         verbose_name='Группа',
         help_text='Название группы',
     )
     slug = models.SlugField(
+        max_length=30,
         unique=True,
         verbose_name='Короткий адрес',
         help_text='Короткий идентификатор группы',
@@ -26,6 +28,11 @@ class Group(models.Model):
     class Meta:
         verbose_name = 'Группа'
         verbose_name_plural = 'Группы'
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)[:settings.SLUG_MAX_LENGTH]
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title

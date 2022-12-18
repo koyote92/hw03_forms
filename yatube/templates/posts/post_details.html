@@ -2,6 +2,13 @@
 {% block title %}Пост {{ post.text|truncatechars:30 }}{% endblock title %}
 {% block content %}
     <div class="container py-5">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-danger">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
         <ul>
             <li>
                 Автор: <a
@@ -30,8 +37,16 @@
             </p>
         </article>
         {% if post.author == user %}
-            <a href="{% url 'posts:post_update' post.id %}">Редактировать</a>
-{#            <a href="{% url 'posts:post_delete' post.id %}">Удалить</a>#}
+            <button type="button" class="btn btn-secondary">
+                <a href="{% url 'posts:post_update' post.id %}">
+                    <span style="color:white">Редактировать</span>
+                </a>
+            </button>
+            <button type="button" class="btn btn-danger">
+                <a href="{% url 'posts:post_delete' post.id %}">
+                    <span style="color:white">Удалить</span>
+                </a>
+            </button>
         {% endif %}
     </div>
 {% endblock content %}

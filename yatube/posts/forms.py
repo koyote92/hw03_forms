@@ -9,12 +9,12 @@ class PostForm(forms.ModelForm):
         model = Post
         fields = ('text', 'group')
         exclude = ('author',)
-        # help_text добавил в models.py
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs['class'] = 'form-control'
+            self.fields[field].help_text = None
 
     def clean_text(self):
         data = self.cleaned_data['text']
