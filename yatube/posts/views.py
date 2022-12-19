@@ -69,7 +69,7 @@ def post_create(request):
 def post_edit(request, post_id):
     post = get_object_or_404(Post, id=post_id)
     if post.author != request.user:
-        messages.error(request, 'Вы не можете редактировать чужие публикации')
+        messages.error(request, 'Вы не можете редактировать чужие публикации!')
         return redirect('posts:post_details', post_id)
     form = PostForm(request.POST or None, instance=post)
     if form.is_valid():
@@ -88,3 +88,5 @@ def post_delete(request, post_id):
     if request.user == post.author:
         post.delete()
         return redirect('posts:index')
+    messages.error(request, 'Вы не можете удалять чужие публикации!')
+    return redirect('posts:post_details', post_id)
